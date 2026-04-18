@@ -1,0 +1,101 @@
+:root {
+  --bg-primary: #f5f6f8;
+  --bg-card: #ffffff;
+  --border: #e2e8f0;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --accent: #3b82f6;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --success: #10b981;
+  --blue-indicator: #3b82f6;
+  --red-indicator: #ef4444;
+  --green-indicator: #10b981;
+  --yellow-indicator: #f59e0b;
+  --purple-indicator: #8b5cf6;
+  --font: 'Inter', sans-serif;
+  --radius: 8px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg-primary); color: var(--text-primary); font-size: 14px; }
+.app-container { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+/* Setup Layout */
+.main-layout { display: flex; flex: 1; overflow: hidden; }
+.sidebar-config { width: 300px; padding: 20px; background: white; border-right: 1px solid var(--border); overflow-y: auto; }
+.dashboard-area { flex: 1; padding: 20px; overflow-y: auto; background: var(--bg-primary); }
+
+/* Sidebar Inputs */
+.form-group { margin-bottom: 15px; }
+.form-label { display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 5px; }
+.form-input { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; }
+.btn-primary { width: 100%; padding: 10px; background: var(--accent); color: white; border: none; border-radius: 4px; font-weight: 600; cursor: pointer; }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* Dashboard Layout matching Image */
+.dashboard-header { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 15px; }
+.kpi-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 15px; box-shadow: var(--shadow); border-top: 3px solid transparent; }
+.kpi-card:nth-child(1) { border-top-color: var(--blue-indicator); }
+.kpi-card:nth-child(2) { border-top-color: var(--red-indicator); }
+.kpi-card:nth-child(3) { border-top-color: var(--green-indicator); }
+.kpi-card:nth-child(4) { border-top-color: var(--yellow-indicator); }
+.kpi-title { font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: 10px; }
+.kpi-val { font-size: 28px; font-weight: 700; color: var(--blue-indicator); }
+.kpi-card:nth-child(2) .kpi-val { color: var(--red-indicator); }
+.kpi-card:nth-child(3) .kpi-val { color: var(--green-indicator); }
+.kpi-card:nth-child(4) .kpi-val { color: var(--yellow-indicator); }
+.kpi-sub { font-size: 11px; color: var(--text-secondary); margin-top: 5px; display: flex; align-items: center; gap: 5px; }
+.kpi-sub .trend-up { color: var(--success); }
+.kpi-sub .trend-down { color: var(--danger); }
+
+/* Main Grid */
+.dashboard-grid { display: grid; grid-template-columns: 3fr 1fr; gap: 15px; }
+.charts-area { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+.chart-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 15px; box-shadow: var(--shadow); display: flex; flex-direction: column; min-height: 250px; }
+.chart-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+.chart-title { font-size: 13px; font-weight: 600; }
+.chart-subtitle { font-size: 11px; color: var(--text-muted); }
+.chart-body { flex: 1; position: relative; }
+
+/* Right Panel */
+.right-panel { display: flex; flex-direction: column; gap: 15px; }
+.right-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 15px; }
+.right-title { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin-bottom: 15px; }
+
+/* Signal List */
+.signal-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border: 1px solid var(--border); margin-bottom: 8px; border-radius: 4px; background: #fafafa; border-right: 2px solid transparent;}
+.signal-item.critical { border-right-color: var(--danger); }
+.signal-item.high { border-right-color: var(--warning); }
+.signal-idx { font-size: 11px; color: var(--text-muted); margin-right: 10px; font-family: monospace; }
+.signal-desc { flex: 1; font-size: 12px; font-weight: 600; }
+.signal-score { font-size: 16px; font-weight: 700; color: var(--danger); }
+.signal-tags { font-size: 10px; color: var(--text-secondary); margin-top: 4px; display: flex; gap: 8px; }
+.signal-tags span.crit { color: var(--danger); }
+
+/* Sources List */
+.source-item { display: flex; align-items: center; margin-bottom: 12px; font-size: 12px; }
+.source-icon { width: 20px; height: 20px; border-radius: 4px; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-weight: 600; font-size: 10px; color: white; }
+.source-icon.reddit { background: #ff4500; }
+.source-icon.x { background: #000; }
+.source-icon.youtube { background: #ff0000; }
+.source-icon.linkedin { background: #0077b5; }
+.source-icon.forums { background: #475569; }
+.source-name { width: 80px; }
+.source-bar-bg { flex: 1; height: 4px; background: var(--bg-primary); border-radius: 2px; margin: 0 10px; }
+.source-bar-fill { height: 100%; border-radius: 2px; }
+.source-pct { font-weight: 600; width: 30px; text-align: right; }
+
+/* Map */
+.map-container { height: 150px; background: #f0f4f8; border-radius: 4px; border: 1px solid var(--border); background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 10px 10px; position: relative; }
+
+/* D3 Charts Specific */
+.bubble-text { font-family: var(--font); font-size: 10px; fill: white; text-anchor: middle; font-weight: 600; pointer-events: none; }
+.line-critical { stroke: var(--danger); stroke-width: 2; fill: none; }
+.line-all { stroke: var(--blue-indicator); stroke-width: 2; stroke-dasharray: 4; fill: none; }
+.area-critical { fill: rgba(239, 68, 68, 0.1); }
+.axis path, .axis line { stroke: var(--border); }
+.axis text { fill: var(--text-muted); font-size: 10px; }
+.bar-source { fill: var(--blue-indicator); }
