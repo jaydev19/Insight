@@ -132,7 +132,7 @@ def _memory_to_response(memory: SharedMemory, company: str, industry: str, run_i
             "is_ai_generated": summary.is_ai_generated if summary else False,
         } if summary else None,
         "agent_logs": [
-            {"agent": l.agent, "status": l.status, "message": l.message, "duration_ms": l.duration_ms}
+            {"agent": l.agent, "status": l.status, "message": l.message, "timestamp": l.timestamp, "duration_ms": l.duration_ms}
             for l in memory.agent_logs
         ],
         "clusters": [

@@ -12,9 +12,7 @@ import httpx
 from memory import SharedMemory, RawPost, AgentLog
 
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-    "Accept-Language": "en-US,en;q=0.5",
+    "User-Agent": "python:trendsphere.bot:v1.0",
 }
 
 # Indian city coordinates for geo distribution
@@ -56,7 +54,7 @@ def _generate_mock_posts(company: str) -> List[RawPost]:
     posts = []
     now = time.time()
     
-    for i in range(200):
+    for i in range(100):
         title = random.choice(problems)
         created = now - random.randint(0, 30 * 24 * 3600)
         posts.append(RawPost(
@@ -111,44 +109,90 @@ async def _fetch_reddit(company: str, keywords: List[str], client: httpx.AsyncCl
     return posts
 
 
-async def _fetch_newsapi(company: str, keywords: List[str], api_key: str, client: httpx.AsyncClient) -> List[RawPost]:
-    if not api_key:
-        return []
+async def _fetch_news(company: str, keywords: List[str], api_key: str, client: httpx.AsyncClient) -> List[RawPost]:
     posts = []
     query = f"{company} {' '.join(keywords[:3])}"
+    
+    # Try NewsAPI if key is provided
+    if api_key:
+        try:
+            url = "https://newsapi.org/v2/everything"
+            params = {
+                "q": query,
+                "language": "en",
+                "sortBy": "publishedAt",
+                "pageSize": 40,
+                "apiKey": api_key,
+            }
+            r = await client.get(url, params=params, timeout=15)
+            if r.status_code == 200:
+                data = r.json()
+                for i, article in enumerate(data.get("articles", [])):
+                    title = _clean(article.get("title") or "")
+                    body = _clean(article.get("description") or article.get("content") or "")
+                    if not title or title == "[Removed]":
+                        continue
+                    posts.append(RawPost(
+                        id=f"news-{_make_id(title)}",
+                        title=title,
+                        body=body,
+                        score=0,
+                        num_comments=0,
+                        subreddit=article.get("source", {}).get("name", "News"),
+                        author=article.get("author") or "unknown",
+                        created_utc=time.time() - i * 3600,
+                        url=article.get("url", ""),
+                        source="Forums",
+                    ))
+                if posts:
+                    return posts
+            else:
+                print(f"[Collector] NewsAPI error: {r.status_code} {r.text[:200]}")
+        except Exception as e:
+            print(f"[Collector] NewsAPI error: {e}")
+
+    # Fallback to Google News RSS
     try:
-        url = "https://newsapi.org/v2/everything"
-        params = {
-            "q": query,
-            "language": "en",
-            "sortBy": "publishedAt",
-            "pageSize": 40,
-            "apiKey": api_key,
-        }
-        r = await client.get(url, params=params, timeout=15)
-        if r.status_code != 200:
-            print(f"[Collector] NewsAPI error: {r.status_code} {r.text[:200]}")
-            return []
-        data = r.json()
-        for i, article in enumerate(data.get("articles", [])):
-            title = _clean(article.get("title") or "")
-            body = _clean(article.get("description") or article.get("content") or "")
-            if not title or title == "[Removed]":
-                continue
-            posts.append(RawPost(
-                id=f"news-{_make_id(title)}",
-                title=title,
-                body=body,
-                score=0,
-                num_comments=0,
-                subreddit=article.get("source", {}).get("name", "News"),
-                author=article.get("author") or "unknown",
-                created_utc=time.time() - i * 3600,
-                url=article.get("url", ""),
-                source="Forums",
-            ))
+        import xml.etree.ElementTree as ET
+        from email.utils import parsedate_to_datetime
+        
+        rss_url = f"https://news.google.com/rss/search?q={query}&hl=en-US&gl=US&ceid=US:en"
+        r = await client.get(rss_url, timeout=15)
+        if r.status_code == 200:
+            root = ET.fromstring(r.text)
+            channel = root.find("channel")
+            if channel is not None:
+                for i, item in enumerate(channel.findall("item")[:40]):
+                    title = _clean(item.findtext("title", ""))
+                    body = _clean(item.findtext("description", ""))
+                    link = item.findtext("link", "")
+                    pub_date_str = item.findtext("pubDate", "")
+                    
+                    created_utc = time.time()
+                    if pub_date_str:
+                        try:
+                            dt = parsedate_to_datetime(pub_date_str)
+                            created_utc = dt.timestamp()
+                        except:
+                            pass
+                    
+                    if not title:
+                        continue
+                    posts.append(RawPost(
+                        id=f"gnews-{_make_id(title)}",
+                        title=title,
+                        body=body,
+                        score=0,
+                        num_comments=0,
+                        subreddit="Google News",
+                        author="NewsOutlet",
+                        created_utc=created_utc,
+                        url=link,
+                        source="Forums",
+                    ))
     except Exception as e:
-        print(f"[Collector] NewsAPI error: {e}")
+        print(f"[Collector] Google News fallback error: {e}")
+        
     return posts
 
 
@@ -175,7 +219,7 @@ async def run_collector(memory: SharedMemory, company: str, keywords: List[str],
 
     async with httpx.AsyncClient() as client:
         reddit_task = _fetch_reddit(company, keywords, client)
-        news_task = _fetch_newsapi(company, keywords, news_api_key, client)
+        news_task = _fetch_news(company, keywords, news_api_key, client)
         reddit_posts, news_posts = await asyncio.gather(reddit_task, news_task)
 
     all_posts = reddit_posts + news_posts

@@ -119,7 +119,7 @@ Generate a JSON response with this exact structure:
 }
 Generate exactly 3 insights. Be specific, actionable, and connect signals causally.`;
 
-  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${config.llmApiKey}`;
+  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${config.llmApiKey}`;
 
   const body = JSON.stringify({
     contents: [{ parts: [{ text: prompt }] }],
@@ -128,12 +128,12 @@ Generate exactly 3 insights. Be specific, actionable, and connect signals causal
     }
   });
 
-  const res = await fetch(apiUrl, { 
-    method: 'POST', 
-    headers: { 'Content-Type': 'application/json' }, 
-    body 
+  const res = await fetch(apiUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body
   });
-  
+
   if (!res.ok) {
     const errText = await res.text();
     throw new Error(`Gemini API error ${res.status}: ${errText}`);

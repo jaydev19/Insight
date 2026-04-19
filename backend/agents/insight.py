@@ -89,7 +89,7 @@ def _gemini(memory: SharedMemory, company: str, industry: str, api_key: str) -> 
     import google.generativeai as genai
 
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    model = genai.GenerativeModel("gemini-2.5-flash")
 
     top5 = memory.signals[:5]
     signal_summary = "\n".join(
@@ -166,7 +166,7 @@ def run_insight(memory: SharedMemory, company: str, industry: str, gemini_key: s
 
     if gemini_key and memory.signals:
         try:
-            memory.agent_logs.append(AgentLog("Insight Agent", "running", "Calling Gemini 1.5 Flash for strategic analysis...", time.time()))
+            memory.agent_logs.append(AgentLog("Insight Agent", "running", "Calling Gemini 2.5 Flash for strategic analysis...", time.time()))
             memory.executive_summary = _gemini(memory, company, industry, gemini_key)
             duration = int((time.time() - start) * 1000)
             memory.agent_logs.append(AgentLog("Insight Agent", "done", "AI executive summary generated ✓", time.time(), duration))
@@ -179,3 +179,4 @@ def run_insight(memory: SharedMemory, company: str, industry: str, gemini_key: s
     duration = int((time.time() - start) * 1000)
     mode = "AI" if (memory.executive_summary.is_ai_generated) else "rule-based"
     memory.agent_logs.append(AgentLog("Insight Agent", "done", f"Executive summary generated ({mode}) ✓", time.time(), duration))
+ 
